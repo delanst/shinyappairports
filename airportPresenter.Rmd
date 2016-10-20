@@ -1,0 +1,68 @@
+---
+title: "Belgium airports"
+author: "Stefaan Delanghe"
+date: "10/20/2016"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(plyr)
+```
+
+## Case study
+
+We will map all the airports in Belgium. This means outside of large we take into account the smaller ones, heliport and closed airports.
+
+### Gathering
+The data set has been retrieved from [HDX](https://data.humdata.org/dataset/ourairports-bel). For which we thank them to make this case study possible.
+
+Here follows a list of what we will do with the data.
+
+- download the airports from Belgium.
+- clean and tidy up the data.
+- plot the airports on a ploty graph.
+
+## Metadata
+
+|                    |                                               |
+|--------------------|-----------------------------------------------|
+| Source             | OurAirports.com community web site            |
+| Contributor        | OurAirports                                   |
+| Date of dataset    |                                               |
+| Location           | Belgium                                       |
+| Visibility         | Public                                        |
+| License            | Public domain                                 |
+| Methodology        | Other                                         |
+| Caveats / Comments | Unverified live data. May change at any time. |
+
+
+## Download data
+### Here we download the file from HDX website.
+```{r download, echo = TRUE, cache=TRUE}
+download.file("http://ourairports.com/countries/BE/airports.hxl", 
+              destfile = "be-airports.csv")
+```
+
+### Now we clean and tidy up the data
+```{r tidy, echo = TRUE}
+airports <- read.csv("be-airports.csv", header = T)
+airportNames <- c("longitude_deg", "latitude_deg", "name")
+col.num <- which(colnames(airports) %in% airportNames)
+airportMarkers <- data.frame(airports[,col.num])
+airportMarkers <- airportMarkers[-1,]
+airportMarkers <- rename(airportMarkers, 
+        c("latitude_deg"="lat", "longitude_deg"="lng", "name"="popup"))
+```
+airportMarkers contains the data for belgium airports and will be used to plot.
+
+## Map airports in Belgium
+Here you can find a map with all the airports (large, small, heliport and closed).
+```{r plot, echo = FALSE,message=FALSE}
+library(leaflet)
+
+airportMarkers %>% leaflet() %>%
+      addProviderTiles("Esri.WorldImagery") %>%
+      addMarkers() %>%
+      setView(lat=50.901401519800004, lng=4.48443984985, zoom=7)
+```
